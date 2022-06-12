@@ -1,0 +1,40 @@
+<li>
+  <h4>
+    <a href="/housing/affordable-housing/{{data.id}}">{{ data.aptName }}</a> 
+  </h4>
+
+  <p>
+    {% assign allStatuses = data.units | map: "status" | uniq | sort | reverse %}
+    {% for status in allStatuses %}
+      {% render 'statusBadge' status: status %}
+      
+      {% assign sortedTypes = data.units | sortUnitType: "type" | map: "type" | uniq  %}
+      {% for type in sortedTypes %}
+        <span class="badge">{{ type }}</span>
+      {% endfor %} 
+      
+    {% endfor %}
+  </p>
+
+  <address>
+    {% if data.address and data.address != '' %}
+      <p>
+      {{ data.address }}{% if data.city and data.city != '' %}, {{ data.city }}{% endif %} <span class="noprint">(<a href="https://maps.google.com/maps?q={{ data.address | url_encode}} {{ data.city | url_encode}}&country=us" target="_blank" rel="noopener">map</a>)</span>
+      </p>
+    {% endif %}
+    {% if data.email and data.email != '' %}
+      <p>
+        <a href="mailto:{{ data.email }}" target="_blank" rel="noopener">{{ data.email }}</a>
+      </p>
+    {% endif %}
+    {% if data.phone and data.phone != '' %}
+      <p>
+        <a href="tel:+1{{ data.phone | replace: '-', '' }}">{{ data.phone }}</a>
+      </p>
+    {% endif %}
+    {% if data.website and data.website != '' %}
+      <a href="{{ data.website }}" target="_blank" rel="noopener">View property website</a><sup>&#8599;</sup>
+    {% endif %}
+  </address>
+
+</li>

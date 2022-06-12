@@ -1,0 +1,9 @@
+ <span class="badge
+  {% if status == "Call for Status" %}
+    badge__warn
+  {% elsif status == "Waitlist Closed" %}
+    badge__bad
+  {% elsif status == "Waitlist Open" %}
+    badge__ok
+  {% endif %}
+  ">{{ status }}</span>

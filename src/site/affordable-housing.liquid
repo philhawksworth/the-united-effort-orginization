@@ -1,0 +1,353 @@
+---
+layout: layouts/base.liquid
+title: Find Affordable Housing
+permalink: "/housing/affordable-housing/index.html"
+pageClass: "page-housing"
+---
+
+{% edge "liquid" %}
+
+{% comment %} 
+  Sort and filter the accommodation details 
+  based on any query string paramaters passed
+
+  eleventy.edge.query currently only returns singelton params, 
+  so we'll use our own searchParams object created in the edge functiond
+  to include all querystring params
+{% endcomment %}
+{% assign searchResults = accommodation.locations | sort: "aptName" %}
+{% assign query = searchParams %}
+
+{% if query.city %}
+  {% assign searchResults = searchResults | optionFilter: "city", query.city %}
+{% endif %}
+{% if query.includeReferrals == nil %}
+  {% assign searchResults = searchResults | optionFilter: "referrals_only", false %}
+{% endif %}
+{% if query.status %}
+  {% assign searchResults = searchResults | optionFilterUnits: "status", query.status %}
+{% endif %}
+{% if query.unitType %}
+  {% assign searchResults = searchResults | optionFilterUnits: "type", query.unitType %}
+{% endif %}
+{% if query.populations_served %}
+  {% assign searchResults = searchResults | optionFilter: "populations_served", query.populations_served %}
+{% endif %}
+{% if query.propertyName %}
+  {% assign searchResults = searchResults | findByString: "aptName", query.propertyName %}
+{% endif %}
+{% if query.wheelchairAccessibleOnly %}
+  {% assign searchResults = searchResults | optionFilter: "wheelchairAccessibleOnly", query.wheelchairAccessibleOnly %}
+{% endif %}
+{% if query.rentMax %} 
+  {% assign searchResults = searchResults | filterMaxRent: query.rentMax, query.includeUnknownRent %}
+{% endif %}
+{% if query.income %}
+  {% assign searchResults = searchResults | filterMinIncome: query.income, query.includeUnknownIncome %}
+{% endif %}
+
+
+
+{% assign updateButtonStr = "Update results" %}
+{% assign num_filters_applied = query | numFiltersApplied %}
+{% capture num_results_snippet %}
+  Showing {% if accommodation.locations.length == searchResults.length %}all {% endif %} 
+  {{searchResults.length}} 
+  {% if accommodation.locations.length != searchResults.length %} of {{accommodation.locations.length}} {% endif %} 
+  {% if searchResults.length == 1 %}property{% else %} properties{% endif %}
+{% endcapture %}
+
+
+<script>
+function CopyUrl() {
+  navigator.clipboard.writeText(window.location.href);
+  document.getElementById("copy-url-done").removeAttribute("hidden");
+  return false;
+}
+
+// Show a loading message by changing the submit button to say "Loading..."
+function ShowLoading() {
+  let submitButton = document.getElementById("filter-submit");
+  submitButton.value = "Loading...";
+  submitButton.disabled = "disabled";
+}
+
+function HideLoading() {
+  let submitButton = document.getElementById("filter-submit");
+  submitButton.value = "{{updateButtonStr}}";
+  submitButton.removeAttribute("disabled");
+}
+
+// Show a hidden checkbox with id optionId depending on the value ofinputId.
+function ToggleHiddenOption(optionId, inputId) {
+  let option = document.getElementById(optionId);
+  let input = document.getElementById(inputId);
+  if (input.value) {
+    option.parentElement.removeAttribute("hidden");
+  } else {
+    option.parentElement.setAttribute("hidden", "hidden");
+  }
+}
+
+function ToggleRentOption() {
+  ToggleHiddenOption("include-unknown-rent", "rent-max");
+}
+
+function ToggleIncomeOption() {
+  ToggleHiddenOption("include-unknown-income", "income");
+}
+
+// If the filtering form GETs the results page's url with
+// the anchor hash (e.g. action="/affordable-housing/filter#results")
+// then the form submission button will be disabled and the
+// page will not reload if the user clicks on the submit button
+// without first changing the filter state.  So, to force a 
+// page reload every time, have the form GET e.g. 
+// /affordable-housing/filter and manually scroll to the anchor
+// after the page loads.  Also ensure the rent and income checkboxes
+// are shown if those fields are filled. 
+{% if num_filters_applied > 0 %} 
+function OnWindowLoad() {
+  ToggleRentOption();
+  ToggleIncomeOption();
+  location.hash = "#results";
+}
+window.onload = function() {OnWindowLoad()};
+{% endif %}
+
+function OnPageShow() {
+  // When the user departs the page by applying filters, the submit
+  // button text changes to a loading message.  Ensure that loading
+  // message is gone if the user returns to the page via the back
+  // navigation arrow.
+  HideLoading();
+}
+
+window.onpageshow = function() {OnPageShow()};
+
+</script>
+<h1>{{title}}</h1>
+<p class="noprint bold">{{num_results_snippet}}<p>
+{% if num_filters_applied == 0 %}
+  <p>Use the filter options below to narrow your search.</p>  
+{% else %}
+  <p class="noprint">
+  {{num_filters_applied}} {% if num_filters_applied == 1 %}filter is {% else %}filters are {% endif %}applied. <a href="/housing/affordable-housing">Clear filters</a>
+  </p>
+{% endif %}
+
+
+
+<form action="." action="get" id="housing-search" class="housing_search" onsubmit="ShowLoading();">
+  
+  <fieldset>
+    <legend>City</legend>
+    <div class="option_columns">
+    {% assign sortedCities = accommodation.cities | sort %}
+    {% for opt in sortedCities %}
+      <input type="checkbox" id="{{opt}}" value="{{opt}}" name="city" {{ opt | optionSelected: query.city }} >
+      <label for="{{opt}}">{{opt}}</label> <br/>
+    {% endfor %}
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Type of Unit</legend>
+    <div class="option_columns">
+    {% assign unitTypes = "SRO, Studio, 1 Bedroom, 2 Bedroom, 3 Bedroom, 4 Bedroom, 5 Bedroom, 6 Bedroom, Shared Housing, Others" | split: ", " %}
+    {% for opt in unitTypes %}
+      <input type="checkbox" id="{{opt}}" value="{{opt}}" name="unitType" {{ opt | optionSelected: query.unitType }}>
+      {% if opt == "SRO" %}
+        {% assign label = '<abbr title="Single Room Occupancy">SRO</abbr>' %}
+      {% else %}
+        {% assign label = opt %}
+      {% endif %}
+      <label for="{{opt}}">{{label}}</label><br/>
+    {% endfor %}
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Availability</legend>
+    <div class="option_columns">
+    {% assign availabilties = "Waitlist Open, Waitlist Closed, Call for Status" | split: ", " %}
+    {% for opt in availabilties %}
+      <input type="checkbox" id="{{opt}}" value="{{opt}}" name="status" {{ opt | optionSelected: query.status }}>
+      <label for="{{opt}}">{{opt}}</label><br/>
+    {% endfor %}
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Populations Served</legend>
+    <div class="option_columns wide">
+     {% assign sortedPopulations = accommodation.populations | sort %}
+    {% for opt in sortedPopulations %}
+      <input type="checkbox" id="{{opt}}" value="{{opt}}" name="populations_served" {{ opt | optionSelected: query.populations_served }}>
+      <label for="{{opt}}">{{opt}}</label><br/>
+    {% endfor %}
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Rent</legend>
+    <div>
+      <label for="rent-max">Maximum ($ per month)</label><br />
+      <input type="number" oninput="ToggleRentOption();" min="0" id="rent-max" name="rentMax" value="{{query.rentMax | escape}}"><br/>
+      <span id="include-unknown-rent-container" hidden>
+        <input type="checkbox" id="include-unknown-rent" name="includeUnknownRent"
+        {% if num_filters_applied == 0 or query.includeUnknownRent == "on" %}checked{% endif %}>
+        <label for="include-unknown-rent">Include properties with no rent information</label> 
+      </span>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Income</legend>
+    <div>
+      <label for="income">Yearly Income ($)</label>
+      <span class="tooltip_entry">
+        <span class="icon_query"></span>
+        <span class="tooltip_content">
+          Provide your income to hide properties you are not eligible for. Your information will not be stored.
+        </span>
+      </span>
+      <br />
+      <input type="number" oninput="ToggleIncomeOption();" min="0" id="income" name="income" value="{{ query.income | escape}}"><br/>
+      <span id="include-unknown-income-container" hidden>
+        <input type="checkbox" id="include-unknown-income" name="includeUnknownIncome"
+        {% if num_filters_applied == 0 or query.includeUnknownIncome == "on" %}checked{% endif %}>
+        <label for="include-unknown-income">Include properties with no income limit information</label>
+      </span>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>More Filters</legend>
+    <div>
+      <input type="checkbox" id="wheelchair-accessible-only" name="wheelchairAccessibleOnly"
+        {% if query.wheelchairAccessibleOnly == "on" %}checked{% endif %}>
+      <label for="wheelchair-accessible-only">Only show wheelchair-accessible properties</label>
+    </div>
+    <div>
+      <input type="checkbox" id="include-referrals" name="includeReferrals"
+        {% if query.includeReferrals == "on" %}checked{% endif %}>
+      <label for="include-referrals">Include properties requiring an agency referral</label>
+      <span class="tooltip_entry">
+        <span class="icon_query"></span>
+        <span class="tooltip_content">
+          Some properties only accept applications by referral through an agency or case manager and do not allow the general public to apply.
+        </span>
+      </span>
+    </div>
+    <div>
+      <label for="property-name">Property Name</label>
+      <input type="text" aria-label="Property Name" id="property-name" value="{{query.propertyName | escape}}" name="propertyName">
+    </div>
+  </fieldset>
+
+  <div class="form_controls">
+    <input type="submit" id="filter-submit" class="btn btn_primary noprint" value="{{updateButtonStr}}"/>
+  </div>
+
+</form>
+
+
+
+
+  <div class="align-end flex stack-reversed" id="results">
+    {% if query %}
+    <p class="noprint bold">
+    {{num_results_snippet}}
+    </p>
+    <div>
+      <a class="btn btn_secondary noprint btn_print " title="Print these results" href="javascript:window.print();">
+        <svg role="img" aria-hidden="true" focusable="false" class="icon ">
+          <use xlink:href="/images/sprites.svg#print"></use>
+        </svg>
+        Print results
+      </a>
+      <a class="btn btn_secondary noprint btn_download " title="Download these results in CSV format" download="housing-list-{{date}}.csv" href="./csv/?{{ query | flatten }}">
+          <svg role="img" aria-hidden="true" focusable="false" class="icon ">
+          <use xlink:href="/images/sprites.svg#download"></use>
+        </svg>
+        CSV
+      </a>
+      <a class="btn btn_secondary noprint btn_bookmark " title="Copy the URL of this search" href="javascript:CopyUrl();">
+        <svg role="img" aria-hidden="true" focusable="false" class="icon icon_copy">
+          <use xlink:href="/images/sprites.svg#copy"></use>
+        </svg>
+        Copy URL
+      </a>
+      <span id="copy-url-done" hidden>&#10003;</span>
+    </div>
+  {% endif %}
+ </div>
+
+
+<ul class="results_list">
+  {%- for location in searchResults %}
+      <li>
+        <h4>
+          <a href="/housing/affordable-housing/{{location.id}}">{{ location.aptName }}</a> 
+        </h4>
+        <p>
+          {% assign allStatuses = location.units | map: "status" | uniq | sort | reverse %}
+          {% for status in allStatuses %}
+            <span class="badge
+            {% if status == "Call for Status" %}
+              badge__warn
+            {% elsif status == "Waitlist Closed" %}
+              badge__bad
+            {% elsif status == "Waitlist Open" %}
+              badge__ok
+            {% endif %}
+            ">{{ status }}</span>
+            
+            {% assign sortedTypes = location.units | sortUnitType: "type" | map: "type" | uniq  %}
+            {% for type in sortedTypes %}
+              <span class="badge">{{ type }}</span>
+            {% endfor %} 
+            
+          {% endfor %}
+        </p>
+
+        <address>
+          {% if location.address and location.address != '' %}
+            <p>
+            {{ location.address }}{% if location.city and location.city != '' %}, {{ location.city }}{% endif %} <span class="noprint">(<a href="https://maps.google.com/maps?q={{ location.address | url_encode}} {{ location.city | url_encode}}&country=us" target="_blank" rel="noopener">map</a>)</span>
+            </p>
+          {% endif %}
+          {% if location.email and location.email != '' %}
+            <p>
+              <a href="mailto:{{ location.email }}" target="_blank" rel="noopener">{{ location.email }}</a>
+            </p>
+          {% endif %}
+          {% if location.phone and location.phone != '' %}
+            <p>
+              <a href="tel:+1{{ location.phone | replace: '-', '' }}">{{ location.phone }}</a>
+            </p>
+          {% endif %}
+          {% if location.website and location.website != '' %}
+            <a href="{{ data.website }}" target="_blank" rel="noopener">View property website</a><sup>&#8599;</sup>
+          {% endif %}
+        </address>
+
+      </li>
+
+    
+  {%- endfor %}
+    {% unless searchResults.length > 0 %}
+      <li class="no_results">
+        Try changing the filter options above to broaden your search and see more results.
+      </li>
+    {% endunless %}
+</ul>
+
+<div>
+  <p>
+    This affordable housing list is compiled from many separate housing lists across Santa Clara County in order to provide a single searchable resource.  We strive to be as accurate as possible, but always confirm property details with the property manager.
+  </p>
+</div>
+
+{% endedge %}

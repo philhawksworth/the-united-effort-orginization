@@ -1,0 +1,40 @@
+---
+title: Data — Find Affordable Housing
+permalink:  "/housing/affordable-housing/csv/"
+---
+{%- edge "liquid" -%}
+{%- assign searchResults = accommodation.locations | sort: "aptName" -%}
+{%- assign query = searchParams -%}
+{%- if query.city -%}
+  {%- assign searchResults = searchResults | optionFilter: "city", query.city -%}
+{%- endif -%}
+{%- if query.includeReferrals == nil -%}
+  {%- assign searchResults = searchResults | optionFilter: "referrals_only", false -%}
+{%- endif -%}
+{%- if query.status -%}
+  {%- assign searchResults = searchResults | optionFilterUnits: "status", query.status -%}
+{%- endif -%}
+{%- if query.unitType -%}
+  {%- assign searchResults = searchResults | optionFilterUnits: "type", query.unitType -%}
+{%- endif -%}
+{%- if query.populations_served -%}
+  {%- assign searchResults = searchResults | optionFilter: "populations_served", query.populations_served -%}
+{%- endif -%}
+{%- if query.propertyName -%}
+  {%- assign searchResults = searchResults | findByString: "aptName", query.propertyName -%}
+{%- endif -%}
+{%- if query.wheelchairAccessibleOnly -%}
+  {%- assign searchResults = searchResults | optionFilter: "wheelchairAccessibleOnly", query.wheelchairAccessibleOnly -%}
+{%- endif -%}
+{%- if query.rentMax -%} 
+  {%- assign searchResults = searchResults | filterMaxRent: query.rentMax, query.includeUnknownRent -%}
+{%- endif -%}
+{%- if query.income -%}
+  {%- assign searchResults = searchResults | filterMinIncome: query.income, query.includeUnknownIncome -%}
+{%- endif -%}
+
+Contacted, Name, Address, City, Phone, Email, Notes
+{%- for item in searchResults %}
+ , {{ item.aptName }}, {{ item.address }}, {{ item.city }}, {{ item.phone }}, {{ item.email }}, 
+{%- endfor %}
+{%- endedge -%}

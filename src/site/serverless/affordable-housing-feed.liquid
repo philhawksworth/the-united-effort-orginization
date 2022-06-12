@@ -1,9 +1,0 @@
----
-title: Data — Find Affordable Housing
-permalink: 
-  build: "/data/housing/affordable-housing/index.html"
-  serverless: "/data/housing/affordable-housing/filter"
----
-{% assign query = eleventy.serverless.query %}
-{% assign housingdb = query | housingResults %}
-{{ housingdb | json }}

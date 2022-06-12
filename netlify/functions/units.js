@@ -1,6 +1,6 @@
 const Airtable = require('airtable');
 const base = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY }).base(process.env.AIRTABLE_BASE_ID);
-const pageTemplate = require("./includes/base.js");
+// const pageTemplate = require("./includes/base.js");
 
 const NO_DATA_STRING = "Call for info";
 const NO_INCOME_BRACKET_STRING = "Bracket"

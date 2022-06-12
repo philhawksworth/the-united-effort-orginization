@@ -1,0 +1,24 @@
+---
+layout: "layouts/base.liquid"
+title: "Resources for Affordable Housing"
+pageClass: "page-resources"
+permalink: /resources/index.html
+---
+
+<h1>General Resources</h1>
+
+
+{% assign category = resources | index: "Category" %}
+{% for city in category | sort %}
+  {% assign links = resources | whereIncluded: "Category", city  %}
+  <h2>{{city}}</h2>
+  <ul>
+    {% for link in links %}
+      {% if link.Markdown %}
+        <li>{{ link.Markdown | markdownify }}</li>
+      {% else %}
+        <li><a href="{{link.URL}}" target="_BLANK" rel="noopener">{{ link.Title }}</a></li>
+      {% endif %}
+    {% endfor %} 
+  </ul>
+{% endfor %}

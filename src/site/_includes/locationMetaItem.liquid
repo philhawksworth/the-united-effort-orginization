@@ -1,0 +1,19 @@
+{% if item and item != "" %}
+<tr>
+  <td class="definition_term">{{ label }}</td>
+  <td class="definition">
+  {% if label == "Email" %}
+    <a href="mailto:{{ item }}">{{ item }}</a>
+  {% elsif label == "Phone" %}
+    <a href="tel:{{ item }}" >{{ item }}</a>
+  {% elsif label == "Website" %}
+    <a href="{{ item }}" target="_BLANK" rel="noopener">{{ item }}</a>
+  {% else %}
+  {% elsif label == "Address" %}
+     {{ item }} (<a href="https://maps.google.com/maps?q={{ location.address }}+{{ location.city }}&country=us" target="_blank" rel="noopener">map</a>)
+  {% else %}
+    {{ item }}
+  {% endif %}
+  </td>
+</tr>
+{% endif %}

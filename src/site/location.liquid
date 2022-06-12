@@ -1,0 +1,49 @@
+---
+title: Affordable Housing - Details
+pagination:
+  data: accommodation.locations
+  size: 1
+  alias: location
+permalink: "/housing/affordable-housing/{{location.id}}/index.html"
+layout: "layouts/base.liquid"
+
+---
+
+<h1>{{ location.aptName }}</h1>
+
+<table class="deflist">
+  {% render 'locationMetaItem' label: "Address", item: location.address, location: location %}
+  {% render 'locationMetaItem' label: "City", item: location.city %}
+  {% render 'locationMetaItem' label: "Email", item: location.email %}
+  {% render 'locationMetaItem' label: "Phone", item: location.phone %}
+  {% render 'locationMetaItem' label: "Website", item: location.website %}
+  {% render 'locationMetaItem' label: "Units", item: location.units_count %}
+</table>
+
+
+{% for unit in location.units %}
+
+  <h3>{{ unit.type }} {% render 'statusBadge' status: unit.status %} </h3>  
+  <p>Maximum occupancy: {{ unit.MAX_OCCUPANCY }}</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Min income (per year)</th>
+        <th>Max income (per year)</th>
+        <th>Rent (per month)</th>
+      </tr>
+    </thead>
+    <tbody>
+    <tr>
+      <td>Call for info </td>
+      <td>Call for info </td>
+      <td>Call for rent </td>
+    <tr>
+    </tbody>
+  </table>
+
+{% endfor %}
+      
+
+

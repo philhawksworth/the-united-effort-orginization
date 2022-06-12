@@ -1,0 +1,46 @@
+---
+layout: "layouts/base.liquid"
+title: "Affordable Housing in Santa Clara County"
+pageClass: "page-housing"
+permalink: /housing/index.html
+---
+
+<h1>{{title}}</h1>
+
+<p>
+  We've compiled all the affordable housing listings across Santa Clara County together into one place.
+</p>
+<br/>
+  <div>
+  <a href="/housing/affordable-housing" class="btn btn_primary">Find affordable housing now</a>
+  </div>
+
+{% assign links = housing | whereEmpty: "City"  %}
+<h2>General Housing Resources</h2>
+<ul>
+  {% for link in links %}
+  <li>
+    <a href="{{link.Link}}" target="_BLANK" rel="noopener">{{ link.Name }}</a>
+    {% if link.Description %}
+    <div class="description">
+      {{ link.Description | markdownify }}
+    </div>
+    {% endif %}
+  </li>
+  {% endfor %}
+</ul>
+
+<h2>City-specific Housing Resources</h2>
+<p>
+  For a more complete list, you can search our <a href="/housing/affordable-housing">Affordable Housing Database</a>.
+</p>
+{% assign cities = housing | index: "City" %}
+<ul>
+{% for city in cities | sort %}
+  {% assign links = housing | whereIncluded: "City", city  %}
+  {% comment %} <h2>{{city}}</h2> {% endcomment %}
+    {% for link in links %}
+    <li><a href="{{link.Link}}" target="_BLANK" rel="noopener">{{ link.Name }}</a></li>
+    {% endfor %}
+{% endfor %}
+</ul>

@@ -6,16 +6,14 @@ const base = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY }).base(process
 // Lookup data for this item from the Airtable API
 const fetchDataFromAirtable = async() => {
   let data = [];
-  const table = base("tblyp7AurXeZEIW4J"); // Resources table
+  const table = base("tblCbqZ3YyHkTNeaC"); // Housing table
   return table.select({
       view: "API list all"
     })
     .all()
     .then(records => {
       records.forEach(function(record) {
-        if (record.get("Show on website")) {
-          data.push(record.fields)
-        }
+        data.push(record.fields)
       });
       return data;
     });
@@ -24,14 +22,12 @@ const fetchDataFromAirtable = async() => {
 
 
 module.exports = async function() {
-  let asset = new AssetCache("airtable_resources");
-  if (asset.isCacheValid("1m")) {
-    console.log("Using cached resources.")
-    return await asset.getCachedValue();
+  let asset = new AssetCache("airtable_housing");
+  if (asset.isCacheValid("1h")) {
+    return asset.getCachedValue(); // a promise
   }
-  console.log("Fetching resources.");
-  let res = await fetchDataFromAirtable();
-  let ret = {resources: res};
-  await asset.save(ret, "json");
-  return ret;
+  console.log("Fetching housing resources.");
+  let housing = await fetchDataFromAirtable();
+  await asset.save(housing, "json");
+  return housing;
 }

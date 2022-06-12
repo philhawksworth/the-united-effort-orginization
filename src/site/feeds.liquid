@@ -10,7 +10,7 @@ permalink: /feeds/index.html
  The content and data resources of this site are available for you to consume as data feeds for use in your own sites and applications. (Fair usage, bandwidth, and requests quotas may apply)
 </p>
 <p>
-  Some pages of the site can be returned as JSON data instead of HTML by prepending <code>/data/</code> to their paths.
+  Some pages of the site can be returned as JSON or CSV data instead of HTML by appending the desired format to therr paths.
 </p>
 
 
@@ -20,20 +20,22 @@ permalink: /feeds/index.html
 <table>
   <thead>
     <tr>
-      <th>HTML view path</th><th>Data view path</th>
+      <th>HTML view path</th><th>JSON data view path</th><th>CSV data view path</th>
     </tr>
   </thead>
   <tr>
     <td><a href="/housing/affordable-housing/">/housing/affordable-housing/</td>
-    <td><a href="/data/housing/affordable-housing/">/data/housing/affordable-housing/</td>
+    <td><a href="/housing/affordable-housing/json/">/data/housing/affordable-housing/json/</td>
+    <td><a href="/housing/affordable-housing/csv/">/data/housing/affordable-housing/csv/</td>
   </tr>
   <tr>
     <td><a href="/housing/affordable-housing/?city=San+Jose">/housing/affordable-housing/?city=San+Jose</td>
-    <td><a href="/data/housing/affordable-housing/?city=San+Jose">/data/housing/affordable-housing?city=San+Jose/</td>
+    <td><a href="/housing/affordable-housing/json/?city=San+Jose">/data/housing/affordable-housing/json/?city=San+Jose/</td>
+    <td><a href="/housing/affordable-housing/csv/?city=San+Jose">/data/housing/affordable-housing/csv/?city=San+Jose/</td>
   </tr>
 </table>
 
-<h3>Affordable housing database details</h3>
+{% comment %} <h3>Affordable housing database details</h3>
 <table>
   <thead>
     <tr>
@@ -44,6 +46,6 @@ permalink: /feeds/index.html
     <td><a href="/housing/affordable-housing/1250">/housing/affordable-housing/1250</td>
     <td><a href="/data/housing/affordable-housing/1250">/data/housing/affordable-housing/1250</td>
   </tr>
-</table>
+</table> {% endcomment %}
 
 
